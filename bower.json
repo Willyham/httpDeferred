@@ -1,0 +1,27 @@
+{
+  "name": "httpDeferred",
+  "version": "0.1.0",
+  "authors": [
+    "Willyham <willdemaine@gmail.com>"
+  ],
+  "description": "A wrapper for jQuery's Deferred to handle errors more simply",
+  "main": "httpDeferred.js",
+  "keywords": [
+    "promise",
+    "deferred",
+    "http",
+    "errors"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jQuery": ">1.5.0",
+    "underscore": "~1.6.0"
+  }
+}
