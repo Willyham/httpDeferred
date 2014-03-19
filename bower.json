@@ -26,6 +26,7 @@
   "devDependencies": {
     "chai": "~1.8.1",
     "mocha": "~1.15.1",
-    "sinonjs": "~1.7.3"
+    "sinonjs": "~1.7.3",
+    "jQuery": "~2.1.0"
   }
 }

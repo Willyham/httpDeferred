@@ -9,7 +9,7 @@
         module.exports = factory(require('underscore'));
     } else {
         // Browser globals (root is window)
-        root.httpDeferred = factory(root._);
+        root.HTTPDeferred = factory(root._);
     }
 }(this, function (_) {
     'use strict';
