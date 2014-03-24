@@ -130,6 +130,32 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc.called).to.eql(false);
   });
 
+  it('Should call unhandled if there was no handler specified', function () {
+    var testCall = new HTTPDeferred($.ajax('fail'));
+    var unhandledFunc = sinon.spy();
+    testCall.unhandled(unhandledFunc);
+    _respond(requests[0], 500);
+    chai.expect(unhandledFunc.called).to.eql(true);
+  });
+
+  it('Should call unhandled if there was no matching handler specified', function () {
+    var testCall = new HTTPDeferred($.ajax('fail'));
+    var unhandledFunc = sinon.spy();
+    testCall.unhandled(unhandledFunc);
+    testCall.handle([401,402], function(){});
+    _respond(requests[0], 500);
+    chai.expect(unhandledFunc.called).to.eql(true);
+  });
+
+  it('Should not call unhandled if there was a matching handler specified', function () {
+    var testCall = new HTTPDeferred($.ajax('fail'));
+    var unhandledFunc = sinon.spy();
+    testCall.handle([401,402], function(){});
+    testCall.unhandled(unhandledFunc);
+    _respond(requests[0], 401);
+    chai.expect(unhandledFunc.called).to.eql(false);
+  });
+
   it('Should work with $.when', function () {
     var testCall = new HTTPDeferred($.ajax('test'));
     var testCall2 = new HTTPDeferred($.ajax('test2'));

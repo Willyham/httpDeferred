@@ -58,6 +58,7 @@
   HTTPDeferred.prototype.handle = function (errorCodes, handleFunction) {
     var self = this;
     errorCodes = _.isArray(errorCodes) ? errorCodes : [errorCodes];
+    this._handlers = _.union(this._handlers, errorCodes);
     this._request.fail(function (response) {
       var errorCode = response.status;
       if (_.contains(errorCodes, errorCode) && !self._stopPropagation) {
