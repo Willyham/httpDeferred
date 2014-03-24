@@ -64,7 +64,7 @@
       if (_.contains(errorCodes, errorCode) && !self._stopPropagation) {
         var responseJSON = self._parseResponse(response);
         self.hasBeenHandled = true;
-        var handleResult = handleFunction.call(self, responseJSON.message);
+        var handleResult = handleFunction.call(self, responseJSON);
         self._stopPropagation = Boolean(handleResult === false);
       }
     });
@@ -83,7 +83,7 @@
       if (!_.contains(self._handlers, errorCode)) {
         self._stopPropagation = true;
         var responseJSON = self._parseResponse(response);
-        unhandledFunction.call(self, responseJSON.message);
+        unhandledFunction.call(self, responseJSON);
       }
     });
   };
@@ -98,7 +98,7 @@
     this._request.fail(function (response) {
       if (!self.hasBeenHandled) {
         var responseJSON = self._parseResponse(response);
-        failFunction.call(self, responseJSON.message);
+        failFunction.call(self, responseJSON);
       }
     });
     return this;
