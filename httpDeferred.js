@@ -1,17 +1,17 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['underscore'], factory);
+    define(['jquery', 'underscore'], factory);
   } else if (typeof exports === 'object') {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
-    module.exports = factory(require('underscore'));
+    module.exports = factory(require('jquery'), require('underscore'));
   } else {
     // Browser globals (root is window)
-    root.HTTPDeferred = factory(root._);
+    root.HTTPDeferred = factory(root.$, root._);
   }
-}(this, function (_) {
+}(this, function ($, _) {
   'use strict';
 
   /**
@@ -23,10 +23,17 @@
    */
   function HTTPDeferred(request) {
     this._stopPropagation = false;
-    this._handlers = [];
-    this._request = request;
-
     this.hasBeenHandled = false;
+    this._handlers = [];
+    this._inner = new $.Deferred();
+
+    var self = this;
+    request.done(function(result){
+      self._inner.resolveWith(this, [result]);
+    });
+    request.fail(function(result){
+      self._inner.rejectWith(this, [result]);
+    });
     return this;
   }
 
@@ -44,7 +51,7 @@
    * @returns {HTTPDeferred} This object for chainability
    */
   HTTPDeferred.prototype.done = function (doneFunction) {
-    this._request.done(doneFunction);
+    this._inner.done(doneFunction);
     return this;
   };
 
@@ -59,7 +66,7 @@
     var self = this;
     errorCodes = _.isArray(errorCodes) ? errorCodes : [errorCodes];
     this._handlers = _.union(this._handlers, errorCodes);
-    this._request.fail(function (response) {
+    this._inner.fail(function (response) {
       var errorCode = response.status;
       if (_.contains(errorCodes, errorCode) && !self._stopPropagation) {
         var responseJSON = self._parseResponse(response);
@@ -78,7 +85,7 @@
    */
   HTTPDeferred.prototype.unhandled = function (unhandledFunction) {
     var self = this;
-    this._request.fail(function (response) {
+    this._inner.fail(function (response) {
       var errorCode = response.status;
       if (!_.contains(self._handlers, errorCode)) {
         self._stopPropagation = true;
@@ -95,7 +102,7 @@
    */
   HTTPDeferred.prototype.fail = function (failFunction) {
     var self = this;
-    this._request.fail(function (response) {
+    this._inner.fail(function (response) {
       if (!self.hasBeenHandled) {
         var responseJSON = self._parseResponse(response);
         failFunction.call(self, responseJSON);
@@ -105,12 +112,32 @@
   };
 
   /**
+   * Proxy the progress function
+   * @param {Function} progressFunc The function to call on notify
+   * @returns {HTTPDeferred} This object for chainability
+   */
+  HTTPDeferred.prototype.progress = function (progressFunc) {
+    this._inner.progress(progressFunc);
+    return this;
+  };
+
+  /**
+   * Notify the deferred of progress.
+   * @param [arguments] The arguments to pass to notify
+   * @returns {HTTPDeferred} This object for chainability
+   */
+  HTTPDeferred.prototype.notify = function(){
+    this._inner.notify.apply(this, arguments);
+    return this;
+  };
+
+  /**
    * Proxy the always function
    * @param {Function} alwaysFunction Function to call after each request
    * @returns {HTTPDeferred} This object for chainability
    */
   HTTPDeferred.prototype.always = function (alwaysFunction) {
-    this._request.always(alwaysFunction);
+    this._inner.always(alwaysFunction);
     return this;
   };
 

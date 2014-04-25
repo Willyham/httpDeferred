@@ -1,9 +1,9 @@
-describe('Test HTTPDeferred lib', function () {
+describe('Test HTTPDeferred lib', function(){
 
   var requests = [];
   var xhr = null;
 
-  beforeEach(function () {
+  beforeEach(function(){
     xhr = sinon.useFakeXMLHttpRequest();
     requests = [];
     xhr.onCreate = function (xhr) {
@@ -11,7 +11,7 @@ describe('Test HTTPDeferred lib', function () {
     };
   });
 
-  afterEach(function () {
+  afterEach(function(){
     xhr.restore();
   });
 
@@ -19,7 +19,7 @@ describe('Test HTTPDeferred lib', function () {
     return request.respond(code, [], '{}');
   };
 
-  it('Should proxy .done calls', function () {
+  it('Should proxy .done calls', function(){
     var testCall = new HTTPDeferred($.ajax('success'));
     var doneFunc = sinon.spy();
     var failFunc = sinon.spy();
@@ -30,7 +30,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(failFunc.called).to.eql(false);
   });
 
-  it('Should proxy .fail calls', function () {
+  it('Should proxy .fail calls', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var doneFunc = sinon.spy();
     var failFunc = sinon.spy();
@@ -41,7 +41,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(failFunc.called).to.eql(true);
   });
 
-  it('Should proxy .always calls', function () {
+  it('Should proxy .always calls', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var alwaysFunc = sinon.spy();
     testCall.always(alwaysFunc);
@@ -49,7 +49,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(alwaysFunc.called).to.eql(true);
   });
 
-  it('Should handle specified status codes', function () {
+  it('Should handle specified status codes', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var handleFunc = sinon.spy();
     testCall.handle([123], handleFunc);
@@ -57,7 +57,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc.called).to.eql(true);
   });
 
-  it('Shouldn\'t handle unspecified status codes', function () {
+  it('Shouldn\'t handle unspecified status codes', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var handleFunc = sinon.spy();
     testCall.handle([123], handleFunc);
@@ -65,7 +65,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc.called).to.eql(false);
   });
 
-  it('Should handle multiple specified status codes', function () {
+  it('Should handle multiple specified status codes', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var handleFunc = sinon.spy();
     testCall.handle([123, 456], handleFunc);
@@ -74,7 +74,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc.calledOnce).to.eql(true);
   });
 
-  it('Shouldn\'t fail if caught with handle', function () {
+  it('Shouldn\'t fail if caught with handle', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var failFunc = sinon.spy();
     var handleFunc = sinon.spy();
@@ -86,7 +86,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(failFunc.called).to.eql(false);
   });
 
-  it('Should call fail if unhandled', function () {
+  it('Should call fail if unhandled', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var failFunc = sinon.spy();
     var handleFunc = sinon.spy();
@@ -97,7 +97,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(failFunc.called).to.eql(true);
   });
 
-  it('Should call always if handled', function () {
+  it('Should call always if handled', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var handleFunc = sinon.spy();
     var alwaysFunc = sinon.spy();
@@ -108,7 +108,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(alwaysFunc.called).to.eql(true);
   });
 
-  it('Should call multiple handle functions', function () {
+  it('Should call multiple handle functions', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var handleFunc = sinon.spy();
     var handleFunc2 = sinon.spy();
@@ -119,10 +119,10 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc2.called).to.eql(true);
   });
 
-  it('Should not keep calling handle functions if stopHandling is called', function () {
+  it('Should not keep calling handle functions if stopHandling is called', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var handleFunc = sinon.spy();
-    testCall.handle([500], function () {
+    testCall.handle([500], function(){
       return testCall.stopHandling();
     });
     testCall.handle([500], handleFunc);
@@ -130,7 +130,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc.called).to.eql(false);
   });
 
-  it('Should call unhandled if there was no handler specified', function () {
+  it('Should call unhandled if there was no handler specified', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var unhandledFunc = sinon.spy();
     testCall.unhandled(unhandledFunc);
@@ -138,7 +138,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(unhandledFunc.called).to.eql(true);
   });
 
-  it('Should call unhandled if there was no matching handler specified', function () {
+  it('Should call unhandled if there was no matching handler specified', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var unhandledFunc = sinon.spy();
     testCall.unhandled(unhandledFunc);
@@ -147,7 +147,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(unhandledFunc.called).to.eql(true);
   });
 
-  it('Should not call unhandled if there was a matching handler specified', function () {
+  it('Should not call unhandled if there was a matching handler specified', function(){
     var testCall = new HTTPDeferred($.ajax('fail'));
     var unhandledFunc = sinon.spy();
     testCall.handle([401,402], function(){});
@@ -156,7 +156,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(unhandledFunc.called).to.eql(false);
   });
 
-  it('Should work with $.when', function () {
+  it('Should work with $.when', function(){
     var testCall = new HTTPDeferred($.ajax('test'));
     var testCall2 = new HTTPDeferred($.ajax('test2'));
     var allDone = sinon.spy();
@@ -166,7 +166,7 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(allDone.called).to.eql(true);
   });
 
-  it('Should handle with $.when', function () {
+  it('Should handle with $.when', function(){
     var testCall = new HTTPDeferred($.ajax('test'));
     var testCall2 = new HTTPDeferred($.ajax('test2'));
     var allDone = sinon.spy();
@@ -179,10 +179,18 @@ describe('Test HTTPDeferred lib', function () {
     chai.expect(handleFunc.called).to.eql(true);
   });
 
-  it('Should be chainable', function () {
+  it('Should be chainable', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var handleFunc = sinon.spy();
     var chain = testCall.handle([123, 456], handleFunc);
     chai.expect(chain).to.eql(testCall);
+  });
+  
+  it('Should work with progress/notify functions', function(){
+    var testCall = new HTTPDeferred($.ajax('blah'));
+    var progressSpy = sinon.spy();
+    testCall.progress(progressSpy);
+    testCall.notify(1, '2', false);
+    chai.expect(progressSpy.calledWith(1, '2', false));
   });
 });
