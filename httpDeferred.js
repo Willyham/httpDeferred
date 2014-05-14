@@ -14,6 +14,13 @@
 }(this, function ($, _) {
   'use strict';
 
+  // Codes from http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+  var _errorCodes = {
+    '4': [400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418,
+      419, 420, 422, 423, 424, 425, 426, 428, 431, 440, 444, 449, 450, 451, 494, 495, 496, 497, 499],
+    '5': [500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 598, 599]
+  };
+
   /**
    * A wrapper around all of our API calls, extending the ajax request handler with knowledge
    * about our error codes. Can be used for both Backbone and general API calls.
@@ -21,7 +28,7 @@
    * @returns {HTTPDeferred} This object for chainability
    * @constructor
    */
-  function HTTPDeferred(request) {
+  function HTTPDeferred(request){
     this._stopPropagation = false;
     this.hasBeenHandled = false;
     this._handlers = [];
@@ -41,7 +48,7 @@
    * A utility function to expose a more readable interface for stopping propagation
    * @returns {Boolean} returns false
    */
-  HTTPDeferred.prototype.stopHandling = function () {
+  HTTPDeferred.prototype.stopHandling = function(){
     return false;
   };
 
@@ -50,9 +57,21 @@
    * @param {Function} doneFunction Function to call when request is done
    * @returns {HTTPDeferred} This object for chainability
    */
-  HTTPDeferred.prototype.done = function (doneFunction) {
+  HTTPDeferred.prototype.done = function(doneFunction){
     this._inner.done(doneFunction);
     return this;
+  };
+
+  /**
+   * Provide the ability to chain promises with 'then'. Because HTTPDeferred is just
+   * a wrapper rather than a real promise implementation, using then will not return an
+   * HTTPDeferred object, so you will lose the ability to chain HTTPDeferred methods like
+   * 'handle' after calling this.
+   * @param thenFunction The function to run after the promise is resolved
+   * @returns {Promise}
+   */
+  HTTPDeferred.prototype.then = function(thenFunction){
+    return this._inner.then(thenFunction);
   };
 
   /**
@@ -62,13 +81,16 @@
    * @param {Function} handleFunction The function to run for a matching error code.
    * @returns {HTTPDeferred} This object for chainability
    */
-  HTTPDeferred.prototype.handle = function (errorCodes, handleFunction) {
+  HTTPDeferred.prototype.handle = function(errorCodes, handleFunction){
     var self = this;
-    errorCodes = _.isArray(errorCodes) ? errorCodes : [errorCodes];
+    errorCodes = this._parseErrorCodes(errorCodes);
+    if(!errorCodes){
+      throw new Error('Invalid error code supplied');
+    }
     this._handlers = _.union(this._handlers, errorCodes);
-    this._inner.fail(function (response) {
+    this._inner.fail(function(response){
       var errorCode = response.status;
-      if (_.contains(errorCodes, errorCode) && !self._stopPropagation) {
+      if(_.contains(errorCodes, errorCode) && !self._stopPropagation){
         var responseJSON = self._parseResponse(response);
         self.hasBeenHandled = true;
         var handleResult = handleFunction.call(self, responseJSON);
@@ -83,11 +105,11 @@
    * As opposed to the fail, which will not run only if the request has *already* been handled.
    * @param {Function} unhandledFunction Function to run when there is no error handler.
    */
-  HTTPDeferred.prototype.unhandled = function (unhandledFunction) {
+  HTTPDeferred.prototype.unhandled = function(unhandledFunction){
     var self = this;
-    this._inner.fail(function (response) {
+    this._inner.fail(function(response){
       var errorCode = response.status;
-      if (!_.contains(self._handlers, errorCode)) {
+      if(!_.contains(self._handlers, errorCode)){
         self._stopPropagation = true;
         var responseJSON = self._parseResponse(response);
         unhandledFunction.call(self, responseJSON);
@@ -100,10 +122,10 @@
    * @param {Function} failFunction Function to call when request fails
    * @returns {HTTPDeferred} This object for chainability
    */
-  HTTPDeferred.prototype.fail = function (failFunction) {
+  HTTPDeferred.prototype.fail = function(failFunction){
     var self = this;
-    this._inner.fail(function (response) {
-      if (!self.hasBeenHandled) {
+    this._inner.fail(function(response){
+      if(!self.hasBeenHandled){
         var responseJSON = self._parseResponse(response);
         failFunction.call(self, responseJSON);
       }
@@ -116,7 +138,7 @@
    * @param {Function} progressFunc The function to call on notify
    * @returns {HTTPDeferred} This object for chainability
    */
-  HTTPDeferred.prototype.progress = function (progressFunc) {
+  HTTPDeferred.prototype.progress = function(progressFunc){
     this._inner.progress(progressFunc);
     return this;
   };
@@ -136,9 +158,46 @@
    * @param {Function} alwaysFunction Function to call after each request
    * @returns {HTTPDeferred} This object for chainability
    */
-  HTTPDeferred.prototype.always = function (alwaysFunction) {
+  HTTPDeferred.prototype.always = function(alwaysFunction){
     this._inner.always(alwaysFunction);
     return this;
+  };
+
+  /**
+   * Get the error codes from the passed in value.
+   * Supports:
+   *  - A number: 400
+   *  - An array: [400,402,404]
+   *  - A string of the form '4XX' or '5XX'
+   * @param {String|Number[]} errorCodes The errors codes.
+   * @returns {Number[]} Parsed error codes
+   * @private
+   */
+  HTTPDeferred.prototype._parseErrorCodes = function(errorCodes){
+    if(_.isString(errorCodes)){
+      return this._getErrorCodesFromString(errorCodes);
+    }
+    return _.isArray(errorCodes) ? errorCodes : [errorCodes];
+  };
+
+  /**
+   * Get error codes from the given string.
+   * The only supported strings are currently '4XX' and '5XX'.
+   * @param {String} errorCodeString
+   * @returns {Number[]} The parsed errors codes
+   * @private
+   */
+  HTTPDeferred.prototype._getErrorCodesFromString = function(errorCodeString){
+    var errorCodeRegex = /([4|5])XX/;
+    var match = errorCodeString.match(errorCodeRegex);
+    if(!match){
+      return [];
+    }
+    var errorGroup = _errorCodes[match[1]];
+    if(!_.isArray(errorGroup)){
+      return [];
+    }
+    return errorGroup;
   };
 
   /**
@@ -147,11 +206,11 @@
    * @returns {Object}
    * @private
    */
-  HTTPDeferred.prototype._parseResponse = function (response) {
+  HTTPDeferred.prototype._parseResponse = function(response){
     try {
       return JSON.parse(response.responseText);
     }
-    catch (error) {
+    catch(error){
       return {
         message: 'Unable to parse response text as JSON ' + response.responseText
       };

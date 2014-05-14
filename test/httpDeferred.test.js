@@ -193,4 +193,22 @@ describe('Test HTTPDeferred lib', function(){
     testCall.notify(1, '2', false);
     chai.expect(progressSpy.calledWith(1, '2', false));
   });
+
+  it('Should accept error codes as a number', function(){
+    var testCall = new HTTPDeferred($.ajax('blah'));
+    var errorCodes = testCall._parseErrorCodes(500);
+    chai.expect(errorCodes).to.eql([500]);
+  });
+
+  it('Should accept error codes as an array', function(){
+    var testCall = new HTTPDeferred($.ajax('blah'));
+    var errorCodes = testCall._parseErrorCodes([401,402]);
+    chai.expect(errorCodes).to.eql([401,402]);
+  });
+
+  it('Should accept error code groups as a string', function(){
+    var testCall = new HTTPDeferred($.ajax('blah'));
+    var errorCodes = testCall._parseErrorCodes('5XX');
+    chai.expect(errorCodes).to.eql([500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 598, 599]);
+  });
 });
