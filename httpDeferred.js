@@ -212,7 +212,7 @@
     }
     catch(error){
       return {
-        message: 'Unable to parse response text as JSON ' + response.responseText
+        message: 'Unable to parse response text as JSON: ' + response.responseText + '. Code: ' + response.status
       };
     }
   };
