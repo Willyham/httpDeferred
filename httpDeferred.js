@@ -70,8 +70,8 @@
    * @param thenFunction The function to run after the promise is resolved
    * @returns {Promise}
    */
-  HTTPDeferred.prototype.then = function(thenFunction){
-    return this._inner.then(thenFunction);
+  HTTPDeferred.prototype.then = function(doneFilter, failFilter, progressFilter){
+    return this._inner.then(doneFilter, failFilter, progressFilter);
   };
 
   /**
