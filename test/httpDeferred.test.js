@@ -49,6 +49,26 @@ describe('Test HTTPDeferred lib', function(){
     chai.expect(alwaysFunc.called).to.eql(true);
   });
 
+  it('Should proxy .then calls correctly, success case', function() {
+    var testCall = new HTTPDeferred($.ajax('success'));
+    var doneFunc = sinon.spy();
+    var failFunc = sinon.spy();
+    testCall.then(doneFunc, failFunc);
+    requests[0].respond(200, {});
+    chai.expect(doneFunc.called).to.eql(true);
+    chai.expect(failFunc.called).to.eql(false);
+  });
+
+  it('Should proxy .then calls correctly, fail case', function() {
+    var testCall = new HTTPDeferred($.ajax('fail'));
+    var doneFunc = sinon.spy();
+    var failFunc = sinon.spy();
+    testCall.then(doneFunc, failFunc);
+    _respond(requests[0], 500);
+    chai.expect(doneFunc.called).to.equal(false);
+    chai.expect(failFunc.called).to.equal(true);
+  });
+
   it('Should handle specified status codes', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var handleFunc = sinon.spy();
@@ -185,7 +205,7 @@ describe('Test HTTPDeferred lib', function(){
     var chain = testCall.handle([123, 456], handleFunc);
     chai.expect(chain).to.eql(testCall);
   });
-  
+
   it('Should work with progress/notify functions', function(){
     var testCall = new HTTPDeferred($.ajax('blah'));
     var progressSpy = sinon.spy();
