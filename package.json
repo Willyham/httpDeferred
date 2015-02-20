@@ -1,6 +1,6 @@
 {
   "name": "httpDeferred",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "",
   "repository": {
     "type": "git",
@@ -26,7 +26,6 @@
     "sinon": "~1.7.3"
   },
   "scripts": {
-    "postinstall": "bower install",
     "test": "grunt test"
   }
 }
